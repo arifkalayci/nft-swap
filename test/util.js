@@ -1,4 +1,4 @@
-const FAR_BLOCK = 10 ** 10  // A block number far in the future
+const NON_EXISTENT_NUMBER = 10 ** 10  // A big enough number which we are sure we won't encounter
 
 const transactAndReturn = async (fn, ...params) => {
   let res = await fn.call(...params)
@@ -7,6 +7,6 @@ const transactAndReturn = async (fn, ...params) => {
 }
 
 module.exports = {
-  FAR_BLOCK,
+  NON_EXISTENT_NUMBER,
   transactAndReturn
 }
