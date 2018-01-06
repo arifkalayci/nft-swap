@@ -11,14 +11,14 @@ util = require('./util')
 contract('NFTSwap offers', function(accounts) {
   let testERC721Inst, nftSwapInst, acc1Token1, acc1Token2, acc1Token3, acc2Token1, acc2Token2, acc2Token3
 
-  mintAndEscrowToken = async (account) => {
+  const mintAndEscrowToken = async (account) => {
     let id = await util.transactAndReturn(testERC721Inst.mint, { from: account })
     await testERC721Inst.approve(nftSwapInst.address, id, { from: account })
     await nftSwapInst.escrowToken(testERC721Inst.address, id, '', { from: account })
     return id
   }
 
-  assertOffer = async (offerId, offerer, requestedIndex, offeredIndex, exchangeValue, expires) => {
+  const assertOffer = async (offerId, offerer, requestedIndex, offeredIndex, exchangeValue, expires) => {
     let offer = await nftSwapInst.offers.call(offerId)
 
     assert.equal(offer[0], offerer)
@@ -28,7 +28,7 @@ contract('NFTSwap offers', function(accounts) {
     assert.equal(offer[4], expires)
   }
 
-  assertOfferDeleted = async (offerId) => {
+  const assertOfferDeleted = async (offerId) => {
     assertOffer(offerId, 0, 0, 0, 0, 0)
   }
 
