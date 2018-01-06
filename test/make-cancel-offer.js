@@ -12,8 +12,7 @@ contract('NFTSwap offers', function(accounts) {
   let testERC721Inst, nftSwapInst, acc1Token1, acc1Token2, acc1Token3, acc2Token1, acc2Token2, acc2Token3
 
   mintAndEscrowToken = async (account) => {
-    let id = await testERC721Inst.mint.call()
-    await testERC721Inst.mint({ from: account })
+    let id = await util.transactAndReturn(testERC721Inst.mint, { from: account })
     await testERC721Inst.approve(nftSwapInst.address, id, { from: account })
     await nftSwapInst.escrowToken(testERC721Inst.address, id, '', { from: account })
     return id
