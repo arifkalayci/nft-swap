@@ -52,8 +52,8 @@ contract('NFTSwap offers', function(accounts) {
     return assert.isRejected(nftSwapInst.makeOffer(0, 2, 0, util.NON_EXISTENT_NUMBER, { from: accounts[1] }))
   });
 
-  it('does not make an offer which expires in a past block', function() {
-    return assert.isRejected(nftSwapInst.makeOffer(0, 3, 0, web3.eth.currentBlock - 1, { from: accounts[1] }))
+  it('does not make an offer which expires immediately', function() {
+    return assert.isRejected(nftSwapInst.makeOffer(0, 3, 0, 0, { from: accounts[1] }))
   })
 
   it('makes offer', async function() {

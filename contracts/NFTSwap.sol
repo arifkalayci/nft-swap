@@ -86,14 +86,14 @@ contract NFTSwap {
     }
 
     // Makes an offer for the token listed at _requestedIndex for the token listed at _offeredIndex
-    function makeOffer(uint _requestedIndex, uint _offeredIndex, int _exchangeValue, uint _expires) external payable returns (uint) {
+    function makeOffer(uint _requestedIndex, uint _offeredIndex, int _exchangeValue, uint _expiresIn) external payable returns (uint) {
         // exchangeValue is the amount of funds which is offered part of the deal. Can be positive or negative.
         // If it's positive, the exact amount must have been send with this transaction
         require(_exchangeValue <= 0 || msg.value == uint(_exchangeValue));
 
         require(_exchangeValue >= 0 || msg.value == 0);
 
-        require(_expires > block.number);
+        require(_expiresIn > 0);
 
         ListedToken storage requestedToken = listedTokens[_requestedIndex];
 
@@ -109,10 +109,10 @@ contract NFTSwap {
             requestedIndex: _requestedIndex,
             offeredIndex: _offeredIndex,
             exchangeValue: _exchangeValue,
-            expires: _expires
+            expires: block.number + _expiresIn
         }));
 
-        OfferMade(requestedToken.contractAddr, requestedToken.tokenId, offeredToken.contractAddr, offeredToken.tokenId, _exchangeValue, _expires);
+        OfferMade(requestedToken.contractAddr, requestedToken.tokenId, offeredToken.contractAddr, offeredToken.tokenId, _exchangeValue, block.number + _expiresIn);
 
         return index - 1;
     }
