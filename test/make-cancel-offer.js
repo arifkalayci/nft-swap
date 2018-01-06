@@ -72,15 +72,15 @@ contract('NFTSwap offers', function(accounts) {
   })
 
   it('does not make an offer with positive exchange value but no funds', function() {
-    return assert.isRejected(nftSwapInst.makeOffer.call(0, 3, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1] }))
+    return assert.isRejected(nftSwapInst.makeOffer(0, 3, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1] }))
   })
 
   it('does not make an offer with positive exchange value but less funds than the exchange value', function() {
-    return assert.isRejected(nftSwapInst.makeOffer.call(0, 3, 2, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 }))
+    return assert.isRejected(nftSwapInst.makeOffer(0, 3, 2, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 }))
   })
 
   it('does not make an offer with positive exchange value but more funds than the exchange value', function() {
-    return assert.isRejected(nftSwapInst.makeOffer.call(0, 3, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 2 }))
+    return assert.isRejected(nftSwapInst.makeOffer(0, 3, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 2 }))
   })
 
   // Dependent on previous tests
@@ -102,7 +102,7 @@ contract('NFTSwap offers', function(accounts) {
   })
 
   it('does not make an offer with negative exchange value but with funds', function() {
-    return assert.isRejected(nftSwapInst.makeOffer.call(0, 3, -1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 }))
+    return assert.isRejected(nftSwapInst.makeOffer(0, 3, -1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 }))
   })
 
   // Dependent on previous tests
