@@ -119,7 +119,7 @@ contract NFTSwap {
 
     function takeOffer(uint _offerId) external payable {
         Offer storage offer = offers[_offerId];
-        require(offer.expires < block.number);
+        require(offer.expires > block.number);
 
         // Negative exchangeValue means offerer wants to receive funds in part of the deal
         // In that case the exact amount of funds must have been send
