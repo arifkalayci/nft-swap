@@ -9,7 +9,7 @@ const assert = chai.assert
 util = require('./util')
 
 contract('NFTSwap offers', function(accounts) {
-  let testERC721Inst, nftSwapInst, acc1Token1, acc1Token2, acc1Token3, acc2Token1, acc2Token2, acc2Token3
+  let testERC721Inst, nftSwapInst, acc1Token, acc2Token, acc3Token
 
   const mintAndEscrowToken = async (account) => {
     let id = await util.transactAndReturn(testERC721Inst.mint, { from: account })
@@ -36,30 +36,28 @@ contract('NFTSwap offers', function(accounts) {
     testERC721Inst = await TestERC721.deployed()
     nftSwapInst = await NFTSwap.deployed()
 
-    acc1Token1 = await mintAndEscrowToken(accounts[0])
-    acc1Token2 = await mintAndEscrowToken(accounts[0])
-    acc1Token3 = await mintAndEscrowToken(accounts[0])
-    acc2Token1 = await mintAndEscrowToken(accounts[1])
-    acc2Token2 = await mintAndEscrowToken(accounts[1])
-    acc2Token3 = await mintAndEscrowToken(accounts[1])
+    acc1Token = await mintAndEscrowToken(accounts[0])
+    acc2Token = await mintAndEscrowToken(accounts[1])
+    acc3Token1 = await util.transactAndReturn(testERC721Inst.mint, { from: accounts[2] })
+    acc3Token2 = await mintAndEscrowToken(accounts[2])
   })
 
   it('does not make an offer with unlisted token', function() {
-    return assert.isRejected(nftSwapInst.makeOffer(0, util.NON_EXISTENT_NUMBER, 0, util.NON_EXISTENT_NUMBER, { from: accounts[1] }))
+    return assert.isRejected(nftSwapInst.makeOffer(acc1Token, acc3Token1, 0, util.NON_EXISTENT_NUMBER, { from: accounts[1] }))
   })
 
   it('does not make an offer with unowned token', function() {
-    return assert.isRejected(nftSwapInst.makeOffer(0, 2, 0, util.NON_EXISTENT_NUMBER, { from: accounts[1] }))
+    return assert.isRejected(nftSwapInst.makeOffer(acc1Token, acc3Token2, 0, util.NON_EXISTENT_NUMBER, { from: accounts[1] }))
   });
 
   it('does not make an offer which expires immediately', function() {
-    return assert.isRejected(nftSwapInst.makeOffer(0, 3, 0, 0, { from: accounts[1] }))
+    return assert.isRejected(nftSwapInst.makeOffer(acc1Token, acc2Token, 0, 0, { from: accounts[1] }))
   })
 
   it('makes offer', async function() {
-    let offerId = await util.transactAndReturn(nftSwapInst.makeOffer, 0, 3, 0, util.NON_EXISTENT_NUMBER, { from: accounts[1] })
+    let offerId = await util.transactAndReturn(nftSwapInst.makeOffer, acc1Token, acc2Token, 0, util.NON_EXISTENT_NUMBER, { from: accounts[1] })
     assert.equal(offerId, 0)
-    assertOffer(offerId, accounts[1], 0, 3, 0, util.NON_EXISTENT_NUMBER)
+    assertOffer(offerId, accounts[1], acc1Token, acc2Token, 0, util.NON_EXISTENT_NUMBER)
   })
 
   it('does not cancel not-owned offer', function() {
@@ -72,22 +70,22 @@ contract('NFTSwap offers', function(accounts) {
   })
 
   it('does not make an offer with positive exchange value but no funds', function() {
-    return assert.isRejected(nftSwapInst.makeOffer(0, 3, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1] }))
+    return assert.isRejected(nftSwapInst.makeOffer(acc1Token, acc2Token, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1] }))
   })
 
   it('does not make an offer with positive exchange value but less funds than the exchange value', function() {
-    return assert.isRejected(nftSwapInst.makeOffer(0, 3, 2, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 }))
+    return assert.isRejected(nftSwapInst.makeOffer(acc1Token, acc2Token, 2, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 }))
   })
 
   it('does not make an offer with positive exchange value but more funds than the exchange value', function() {
-    return assert.isRejected(nftSwapInst.makeOffer(0, 3, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 2 }))
+    return assert.isRejected(nftSwapInst.makeOffer(acc1Token, acc2Token, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 2 }))
   })
 
   // Dependent on previous tests
   it('makes offer with positive exchange value', async function() {
-    let offerId = await util.transactAndReturn(nftSwapInst.makeOffer, 0, 3, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 })
+    let offerId = await util.transactAndReturn(nftSwapInst.makeOffer, acc1Token, acc2Token, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 })
     assert.equal(offerId, 1)
-    assertOffer(offerId, accounts[1], 0, 3, 1, util.NON_EXISTENT_NUMBER)
+    assertOffer(offerId, accounts[1], acc1Token, acc2Token, 1, util.NON_EXISTENT_NUMBER)
   })
 
   // Dependent on previous tests
@@ -102,14 +100,14 @@ contract('NFTSwap offers', function(accounts) {
   })
 
   it('does not make an offer with negative exchange value but with funds', function() {
-    return assert.isRejected(nftSwapInst.makeOffer(0, 3, -1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 }))
+    return assert.isRejected(nftSwapInst.makeOffer(acc1Token, acc2Token, -1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 }))
   })
 
   // Dependent on previous tests
   it('makes offer with negative exchange value', async function() {
-    let offerId = await util.transactAndReturn(nftSwapInst.makeOffer, 0, 3, -1, util.NON_EXISTENT_NUMBER, { from: accounts[1] })
+    let offerId = await util.transactAndReturn(nftSwapInst.makeOffer, acc1Token, acc2Token, -1, util.NON_EXISTENT_NUMBER, { from: accounts[1] })
     assert.equal(offerId, 2)
-    assertOffer(offerId, accounts[1], 0, 3, -1, util.NON_EXISTENT_NUMBER)
+    assertOffer(offerId, accounts[1], acc1Token, acc2Token, -1, util.NON_EXISTENT_NUMBER)
   })
 
   // Dependent on previous tests
@@ -122,11 +120,4 @@ contract('NFTSwap offers', function(accounts) {
     assert(beforeBalance.minus(result.receipt.gasUsed).equals(afterBalance))
     assertOfferDeleted(2)
   })
-
-  // it('makes multiple offers to the same token with different offered tokens', async function() {
-  //   let offerId = await nftSwapInst.makeOffer.call(0, 3, 0, util.NON_EXISTENT_NUMBER, { from: accounts[1] })
-  //   await nftSwapInst.makeOffer(0, 3, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 })
-
-  //   let offerId = await nftSwapInst.makeOffer.call(0, 3, 0, util.NON_EXISTENT_NUMBER, { from: accounts[1] })
-  // })
 })
