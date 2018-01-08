@@ -63,7 +63,7 @@ contract('NFTSwap offers', function(accounts) {
   it('makes offer', async function() {
     let offerId = await util.transactAndReturn(nftSwapInst.makeOffer, acc1Token, acc2Token, 0, util.NON_EXISTENT_NUMBER, { from: accounts[1] })
     assert.equal(offerId, 0)
-    assertOffer(offerId, accounts[1], acc1Token, acc2Token, 0, util.NON_EXISTENT_NUMBER)
+    await assertOffer(offerId, accounts[1], acc1Token, acc2Token, 0, util.NON_EXISTENT_NUMBER)
   })
 
   it('does not cancel not-owned offer', function() {
@@ -72,7 +72,7 @@ contract('NFTSwap offers', function(accounts) {
 
   it('cancels an offer', async function() {
     await nftSwapInst.cancelOffer(0, { from: accounts[1] })
-    assertOfferDeleted(0)
+    await assertOfferDeleted(0)
   })
 
   it('does not make an offer with positive exchange value but no funds', function() {
@@ -91,7 +91,7 @@ contract('NFTSwap offers', function(accounts) {
   it('makes offer with positive exchange value', async function() {
     let offerId = await util.transactAndReturn(nftSwapInst.makeOffer, acc1Token, acc2Token, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 })
     assert.equal(offerId, 1)
-    assertOffer(offerId, accounts[1], acc1Token, acc2Token, 1, util.NON_EXISTENT_NUMBER)
+    await assertOffer(offerId, accounts[1], acc1Token, acc2Token, 1, util.NON_EXISTENT_NUMBER)
   })
 
   // Dependent on previous tests
@@ -102,7 +102,7 @@ contract('NFTSwap offers', function(accounts) {
 
     // Since we have a given a gasPrice of 1 wei, tx cost is equal to gasUsed
     assert(beforeBalance.minus(result.receipt.gasUsed).add(1).equals(afterBalance))
-    assertOfferDeleted(1)
+    await assertOfferDeleted(1)
   })
 
   it('does not make an offer with negative exchange value but with funds', function() {
@@ -113,7 +113,7 @@ contract('NFTSwap offers', function(accounts) {
   it('makes offer with negative exchange value', async function() {
     let offerId = await util.transactAndReturn(nftSwapInst.makeOffer, acc1Token, acc2Token, -1, util.NON_EXISTENT_NUMBER, { from: accounts[1] })
     assert.equal(offerId, 2)
-    assertOffer(offerId, accounts[1], acc1Token, acc2Token, -1, util.NON_EXISTENT_NUMBER)
+    await assertOffer(offerId, accounts[1], acc1Token, acc2Token, -1, util.NON_EXISTENT_NUMBER)
   })
 
   // Dependent on previous tests
@@ -124,6 +124,6 @@ contract('NFTSwap offers', function(accounts) {
 
     // Since we have a given a gasPrice of 1 wei, tx cost is equal to gasUsed
     assert(beforeBalance.minus(result.receipt.gasUsed).equals(afterBalance))
-    assertOfferDeleted(2)
+    await assertOfferDeleted(2)
   })
 })
