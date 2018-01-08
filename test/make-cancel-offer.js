@@ -18,14 +18,14 @@ contract('NFTSwap offers', function(accounts) {
     return id
   }
 
-  const assertOffer = async (offerId, offerer, requestedIndex, offeredIndex, exchangeValue, expires) => {
+  const assertOffer = async (offerId, offerer, requestedIndex, offeredIndex, exchangeValue, expiresIn) => {
     let offer = await nftSwapInst.offers.call(offerId)
 
     assert.equal(offer[0], offerer)
-    assert.equal(offer[1], requestedIndex)
-    assert.equal(offer[2], offeredIndex)
-    assert.equal(offer[3], exchangeValue)
-    assert.equal(offer[4], expires)
+    assert(offer[1].equals(requestedIndex))
+    assert(offer[2].equals(offeredIndex))
+    assert(offer[3].equals(exchangeValue))
+    assert(offer[4].equals(web3.eth.blockNumber + expiresIn))
   }
 
   const assertOfferDeleted = async (offerId) => {
