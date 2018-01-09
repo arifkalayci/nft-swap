@@ -2,8 +2,6 @@ const NFTSwap = artifacts.require('NFTSwap')
 const TestERC721 = artifacts.require('TestERC721')
 
 const chai = require("chai")
-const chaiAsPromised = require("chai-as-promised")
-chai.use(chaiAsPromised)
 const assert = chai.assert
 
 util = require('./util')
