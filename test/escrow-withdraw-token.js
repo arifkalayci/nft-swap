@@ -6,6 +6,8 @@ const chaiAsPromised = require("chai-as-promised")
 chai.use(chaiAsPromised)
 const assert = chai.assert
 
+util = require('./util')
+
 contract('NFTSwap tokens', function(accounts) {
   let testERC721Inst, nftSwapInst, unapprovedToken, approvedToken1, approvedToken2, approvedToken3
 
@@ -47,8 +49,8 @@ contract('NFTSwap tokens', function(accounts) {
     await testERC721Inst.approve(nftSwapInst.address, approvedToken3, { from: accounts[0] })
   })
 
-  it('does not escrow unapproved token', function() {
-      return assert.isRejected(nftSwapInst.escrowToken(testERC721Inst.address, unapprovedToken, '', { from: accounts[0] }))
+  it('does not escrow unapproved token', async function() {
+      await util.expectRevert(nftSwapInst.escrowToken(testERC721Inst.address, unapprovedToken, '', { from: accounts[0] }))
   })
 
   it('escrows first approved token', async function() {
@@ -82,7 +84,7 @@ contract('NFTSwap tokens', function(accounts) {
     assertListedTokenDeleted(0)
 
     assert((await nftSwapInst.ownerTokens.call(accounts[0], 0)).equals(1))
-    assert.isRejected(nftSwapInst.ownerTokens.call(accounts[0], 1))
+    await util.expectInvalidOpcode(nftSwapInst.ownerTokens.call(accounts[0], 1))
 
     assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, approvedToken1)).equals(0))
     assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, approvedToken2)).equals(0))
@@ -109,7 +111,7 @@ contract('NFTSwap tokens', function(accounts) {
     assertListedTokenDeleted(2)
 
     assert((await nftSwapInst.ownerTokens.call(accounts[0], 0)).equals(1))
-    assert.isRejected(nftSwapInst.ownerTokens.call(accounts[0], 1))
+    await util.expectInvalidOpcode(nftSwapInst.ownerTokens.call(accounts[0], 1))
 
     assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, approvedToken1)).equals(0))
     assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, approvedToken2)).equals(0))
@@ -127,7 +129,7 @@ contract('NFTSwap tokens', function(accounts) {
 
     assert((await nftSwapInst.ownerTokens.call(accounts[0], 0)).equals(1))
     assert((await nftSwapInst.ownerTokens.call(accounts[0], 1)).equals(3))
-    assert.isRejected(nftSwapInst.ownerTokens.call(accounts[0], 2))
+    await util.expectInvalidOpcode(nftSwapInst.ownerTokens.call(accounts[0], 2))
 
     assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, approvedToken1)).equals(1))
     assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, approvedToken2)).equals(0))

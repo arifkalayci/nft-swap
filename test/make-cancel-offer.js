@@ -48,16 +48,16 @@ contract('NFTSwap offers', function(accounts) {
     acc3Token2 = await mintAndEscrowToken(accounts[2])
   })
 
-  it('does not make an offer with unlisted token', function() {
-    return assert.isRejected(nftSwapInst.makeOffer(acc1Token, acc3Token1, 0, util.NON_EXISTENT_NUMBER, { from: accounts[1] }))
+  it('does not make an offer with unlisted token', async function() {
+    await util.expectRevert(nftSwapInst.makeOffer(acc1Token, acc3Token1, 0, util.NON_EXISTENT_NUMBER, { from: accounts[1] }))
   })
 
-  it('does not make an offer with unowned token', function() {
-    return assert.isRejected(nftSwapInst.makeOffer(acc1Token, acc3Token2, 0, util.NON_EXISTENT_NUMBER, { from: accounts[1] }))
+  it('does not make an offer with unowned token', async function() {
+    await util.expectInvalidOpcode(nftSwapInst.makeOffer(acc1Token, acc3Token2, 0, util.NON_EXISTENT_NUMBER, { from: accounts[1] }))
   });
 
-  it('does not make an offer which expires immediately', function() {
-    return assert.isRejected(nftSwapInst.makeOffer(acc1Token, acc2Token, 0, 0, { from: accounts[1] }))
+  it('does not make an offer which expires immediately', async function() {
+    await util.expectRevert(nftSwapInst.makeOffer(acc1Token, acc2Token, 0, 0, { from: accounts[1] }))
   })
 
   it('makes offer', async function() {
@@ -66,8 +66,8 @@ contract('NFTSwap offers', function(accounts) {
     await assertOffer(offerId, accounts[1], acc1Token, acc2Token, 0, util.NON_EXISTENT_NUMBER)
   })
 
-  it('does not cancel not-owned offer', function() {
-    return assert.isRejected(nftSwapInst.cancelOffer(0, { from: accounts[0] }))
+  it('does not cancel not-owned offer', async function() {
+    await util.expectRevert(nftSwapInst.cancelOffer(0, { from: accounts[0] }))
   })
 
   it('cancels an offer', async function() {
@@ -75,16 +75,16 @@ contract('NFTSwap offers', function(accounts) {
     await assertOfferDeleted(0)
   })
 
-  it('does not make an offer with positive exchange value but no funds', function() {
-    return assert.isRejected(nftSwapInst.makeOffer(acc1Token, acc2Token, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1] }))
+  it('does not make an offer with positive exchange value but no funds', async function() {
+    await util.expectRevert(nftSwapInst.makeOffer(acc1Token, acc2Token, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1] }))
   })
 
-  it('does not make an offer with positive exchange value but less funds than the exchange value', function() {
-    return assert.isRejected(nftSwapInst.makeOffer(acc1Token, acc2Token, 2, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 }))
+  it('does not make an offer with positive exchange value but less funds than the exchange value', async function() {
+    await util.expectRevert(nftSwapInst.makeOffer(acc1Token, acc2Token, 2, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 }))
   })
 
-  it('does not make an offer with positive exchange value but more funds than the exchange value', function() {
-    return assert.isRejected(nftSwapInst.makeOffer(acc1Token, acc2Token, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 2 }))
+  it('does not make an offer with positive exchange value but more funds than the exchange value', async function() {
+    await util.expectRevert(nftSwapInst.makeOffer(acc1Token, acc2Token, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 2 }))
   })
 
   // Dependent on previous tests
@@ -105,8 +105,8 @@ contract('NFTSwap offers', function(accounts) {
     await assertOfferDeleted(1)
   })
 
-  it('does not make an offer with negative exchange value but with funds', function() {
-    return assert.isRejected(nftSwapInst.makeOffer(acc1Token, acc2Token, -1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 }))
+  it('does not make an offer with negative exchange value but with funds', async function() {
+    await util.expectRevert(nftSwapInst.makeOffer(acc1Token, acc2Token, -1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 }))
   })
 
   // Dependent on previous tests
