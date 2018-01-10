@@ -100,11 +100,13 @@ contract('NFTSwap offers', function(accounts) {
     let accAfterBalance = web3.eth.getBalance(accounts[1])
     let contractAfterBalance = web3.eth.getBalance(nftSwapInst.address)
 
+    let exchangeValue = 1 // Exchange value of the cancelled order
+
     // Since we have a given a gasPrice of 1 wei, tx cost is equal to gasUsed
-    assert(accBeforeBalance.minus(result.receipt.gasUsed).add(1).equals(accAfterBalance))
+    assert(accBeforeBalance.minus(result.receipt.gasUsed).add(exchangeValue).equals(accAfterBalance))
 
     // Make sure funds are refunded
-    assert(contractBeforeBalance.minus(1).equals(contractAfterBalance))
+    assert(contractBeforeBalance.minus(exchangeValue).equals(contractAfterBalance))
 
     await assertOfferDeleted(1)
   })
