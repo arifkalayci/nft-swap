@@ -94,12 +94,18 @@ contract('NFTSwap offers', function(accounts) {
 
   // Dependent on previous tests
   it('cancels offer with positive exchange value', async function() {
-    let beforeBalance = web3.eth.getBalance(accounts[1])
+    let accBeforeBalance = web3.eth.getBalance(accounts[1])
+    let contractBeforeBalance = web3.eth.getBalance(nftSwapInst.address)
     let result = await nftSwapInst.cancelOffer(1, { from: accounts[1], gasPrice: 1 })
-    let afterBalance = web3.eth.getBalance(accounts[1])
+    let accAfterBalance = web3.eth.getBalance(accounts[1])
+    let contractAfterBalance = web3.eth.getBalance(nftSwapInst.address)
 
     // Since we have a given a gasPrice of 1 wei, tx cost is equal to gasUsed
-    assert(beforeBalance.minus(result.receipt.gasUsed).add(1).equals(afterBalance))
+    assert(accBeforeBalance.minus(result.receipt.gasUsed).add(1).equals(accAfterBalance))
+
+    // Make sure funds are refunded
+    assert(contractBeforeBalance.minus(1).equals(contractAfterBalance))
+
     await assertOfferDeleted(1)
   })
 
@@ -116,12 +122,20 @@ contract('NFTSwap offers', function(accounts) {
 
   // Dependent on previous tests
   it('cancels offer with negative exchange value', async function() {
-    let beforeBalance = web3.eth.getBalance(accounts[1])
+    let offer = await nftSwapInst.offers.call(2)
+
+    let accBeforeBalance = web3.eth.getBalance(accounts[1])
+    let contractBeforeBalance = web3.eth.getBalance(nftSwapInst.address)
     let result = await nftSwapInst.cancelOffer(2, { from: accounts[1], gasPrice: 1 })
-    let afterBalance = web3.eth.getBalance(accounts[1])
+    let accAfterBalance = web3.eth.getBalance(accounts[1])
+    let contractAfterBalance = web3.eth.getBalance(nftSwapInst.address)
 
     // Since we have a given a gasPrice of 1 wei, tx cost is equal to gasUsed
-    assert(beforeBalance.minus(result.receipt.gasUsed).equals(afterBalance))
+    assert(accBeforeBalance.minus(result.receipt.gasUsed).equals(accAfterBalance))
+
+    // Make sure no funds were transferred
+    assert(contractBeforeBalance.equals(contractAfterBalance))
+
     await assertOfferDeleted(2)
   })
 })
