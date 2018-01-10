@@ -115,7 +115,7 @@ contract('NFTSwap offers', function(accounts) {
   })
 
   // Dependent on previous tests
-  it('cancels an offer with positive exchange value', async function() {
+  it('cancels an offer with negative exchange value', async function() {
     let beforeBalance = web3.eth.getBalance(accounts[1])
     let result = await nftSwapInst.cancelOffer(2, { from: accounts[1], gasPrice: 1 })
     let afterBalance = web3.eth.getBalance(accounts[1])
