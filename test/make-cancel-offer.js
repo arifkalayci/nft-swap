@@ -46,15 +46,15 @@ contract('NFTSwap offers', function(accounts) {
     acc3Token2 = await mintAndEscrowToken(accounts[2])
   })
 
-  it('does not make an offer with unlisted token', async function() {
+  it('does not make offer with unlisted token', async function() {
     await util.expectRevert(nftSwapInst.makeOffer(acc1Token, acc3Token1, 0, util.NON_EXISTENT_NUMBER, { from: accounts[1] }))
   })
 
-  it('does not make an offer with unowned token', async function() {
+  it('does not make offer with unowned token', async function() {
     await util.expectInvalidOpcode(nftSwapInst.makeOffer(acc1Token, acc3Token2, 0, util.NON_EXISTENT_NUMBER, { from: accounts[1] }))
   });
 
-  it('does not make an offer which expires immediately', async function() {
+  it('does not make offer which expires immediately', async function() {
     await util.expectRevert(nftSwapInst.makeOffer(acc1Token, acc2Token, 0, 0, { from: accounts[1] }))
   })
 
@@ -68,20 +68,20 @@ contract('NFTSwap offers', function(accounts) {
     await util.expectRevert(nftSwapInst.cancelOffer(0, { from: accounts[0] }))
   })
 
-  it('cancels an offer', async function() {
+  it('cancels offer', async function() {
     await nftSwapInst.cancelOffer(0, { from: accounts[1] })
     await assertOfferDeleted(0)
   })
 
-  it('does not make an offer with positive exchange value but no funds', async function() {
+  it('does not make offer with positive exchange value but no funds', async function() {
     await util.expectRevert(nftSwapInst.makeOffer(acc1Token, acc2Token, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1] }))
   })
 
-  it('does not make an offer with positive exchange value but less funds than the exchange value', async function() {
+  it('does not make offer with positive exchange value but less funds than the exchange value', async function() {
     await util.expectRevert(nftSwapInst.makeOffer(acc1Token, acc2Token, 2, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 }))
   })
 
-  it('does not make an offer with positive exchange value but more funds than the exchange value', async function() {
+  it('does not make offer with positive exchange value but more funds than the exchange value', async function() {
     await util.expectRevert(nftSwapInst.makeOffer(acc1Token, acc2Token, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 2 }))
   })
 
@@ -93,7 +93,7 @@ contract('NFTSwap offers', function(accounts) {
   })
 
   // Dependent on previous tests
-  it('cancels an offer with positive exchange value', async function() {
+  it('cancels offer with positive exchange value', async function() {
     let beforeBalance = web3.eth.getBalance(accounts[1])
     let result = await nftSwapInst.cancelOffer(1, { from: accounts[1], gasPrice: 1 })
     let afterBalance = web3.eth.getBalance(accounts[1])
@@ -103,7 +103,7 @@ contract('NFTSwap offers', function(accounts) {
     await assertOfferDeleted(1)
   })
 
-  it('does not make an offer with negative exchange value but with funds', async function() {
+  it('does not make offer with negative exchange value but with funds', async function() {
     await util.expectRevert(nftSwapInst.makeOffer(acc1Token, acc2Token, -1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 }))
   })
 
@@ -115,7 +115,7 @@ contract('NFTSwap offers', function(accounts) {
   })
 
   // Dependent on previous tests
-  it('cancels an offer with negative exchange value', async function() {
+  it('cancels offer with negative exchange value', async function() {
     let beforeBalance = web3.eth.getBalance(accounts[1])
     let result = await nftSwapInst.cancelOffer(2, { from: accounts[1], gasPrice: 1 })
     let afterBalance = web3.eth.getBalance(accounts[1])
