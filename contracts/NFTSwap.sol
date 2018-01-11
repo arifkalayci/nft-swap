@@ -64,23 +64,28 @@ contract NFTSwap {
     }
 
     function withdrawToken(uint _listedTokenIndex) external {
-        ListedToken storage withdrawnToken = listedTokens[_listedTokenIndex];
-        require(withdrawnToken.owner == msg.sender);
+        ListedToken storage withdrawnListedToken = listedTokens[_listedTokenIndex];
+        require(withdrawnListedToken.owner == msg.sender);
 
-        uint movedTokenIndex = ownerTokens[msg.sender][ownerTokens[msg.sender].length -1];
+        if (ownerTokens[msg.sender].length > 1 &&
+            tokenIndexInOwnerTokens[withdrawnListedToken.contractAddr][withdrawnListedToken.tokenId] != ownerTokens[msg.sender].length - 1)
+        {
+            uint movedListedTokenIndex = ownerTokens[msg.sender][ownerTokens[msg.sender].length - 1];
 
-        ownerTokens[msg.sender][tokenIndexInOwnerTokens[withdrawnToken.contractAddr][withdrawnToken.tokenId]] = movedTokenIndex;
+            ownerTokens[msg.sender][tokenIndexInOwnerTokens[withdrawnListedToken.contractAddr][withdrawnListedToken.tokenId]] = movedListedTokenIndex;
+
+            // Update moved token's index in owner tokens
+            ListedToken storage movedListedToken = listedTokens[movedListedTokenIndex];
+            tokenIndexInOwnerTokens[movedListedToken.contractAddr][movedListedToken.tokenId]
+                = tokenIndexInOwnerTokens[withdrawnListedToken.contractAddr][withdrawnListedToken.tokenId];
+        }
+
         ownerTokens[msg.sender].length--;
+        delete tokenIndexInOwnerTokens[withdrawnListedToken.contractAddr][withdrawnListedToken.tokenId];
 
-        delete tokenIndexInOwnerTokens[withdrawnToken.contractAddr][withdrawnToken.tokenId];
+        ERC721(withdrawnListedToken.contractAddr).transfer(msg.sender, withdrawnListedToken.tokenId);
 
-        // Update moved token's index in owner tokens
-        ListedToken storage movedToken = listedTokens[movedTokenIndex];
-        tokenIndexInOwnerTokens[movedToken.contractAddr][movedToken.tokenId] = ownerTokens[msg.sender].length - 1;
-
-        ERC721(withdrawnToken.contractAddr).transfer(msg.sender, withdrawnToken.tokenId);
-
-        TokenUnlisted(withdrawnToken.contractAddr, withdrawnToken.tokenId);
+        TokenUnlisted(withdrawnListedToken.contractAddr, withdrawnListedToken.tokenId);
 
         delete listedTokens[_listedTokenIndex];
     }
