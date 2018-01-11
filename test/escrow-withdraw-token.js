@@ -133,4 +133,28 @@ contract('NFTSwap tokens', function(accounts) {
     assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, approvedToken2)).equals(0))
     assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, approvedToken3)).equals(0))
   })
+
+
+  it('withdraws all tokens', async function() {
+    await nftSwapInst.withdrawToken(1, { from: accounts[0] })
+
+    await assertListedTokenDeleted(1)
+
+    assert((await nftSwapInst.ownerTokens.call(accounts[0], 0)).equals(3))
+    await util.expectInvalidOpcode(nftSwapInst.ownerTokens.call(accounts[0], 1))
+
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, approvedToken1)).equals(0))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, approvedToken2)).equals(0))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, approvedToken3)).equals(0))
+
+    await nftSwapInst.withdrawToken(3, { from: accounts[0] })
+
+    await assertListedTokenDeleted(3)
+
+    await util.expectInvalidOpcode(nftSwapInst.ownerTokens.call(accounts[0], 0))
+
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, approvedToken1)).equals(0))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, approvedToken2)).equals(0))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, approvedToken3)).equals(0))
+  })
 })
