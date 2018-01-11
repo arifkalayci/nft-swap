@@ -125,6 +125,9 @@ contract NFTSwap {
         // In that case the exact amount of funds must have been send
         require(offer.exchangeValue >= 0 || msg.value == uint(-offer.exchangeValue));
 
+        // If exchangeValue is greater than or equal to 0, no funds accepted
+        require(offer.exchangeValue < 0 || msg.value == 0);
+
         ListedToken storage givenToken = listedTokens[offer.requestedIndex];
         require(givenToken.owner == msg.sender);
 
