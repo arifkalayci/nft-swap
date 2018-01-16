@@ -67,9 +67,7 @@ contract NFTSwap {
         ListedToken storage withdrawnListedToken = listedTokens[_listedTokenIndex];
         require(withdrawnListedToken.owner == msg.sender);
 
-        if (ownerTokens[msg.sender].length > 1 &&
-            tokenIndexInOwnerTokens[withdrawnListedToken.contractAddr][withdrawnListedToken.tokenId] != ownerTokens[msg.sender].length - 1)
-        {
+        if (tokenIndexInOwnerTokens[withdrawnListedToken.contractAddr][withdrawnListedToken.tokenId] != ownerTokens[msg.sender].length - 1) {
             uint movedListedTokenIndex = ownerTokens[msg.sender][ownerTokens[msg.sender].length - 1];
 
             ownerTokens[msg.sender][tokenIndexInOwnerTokens[withdrawnListedToken.contractAddr][withdrawnListedToken.tokenId]] = movedListedTokenIndex;
