@@ -85,14 +85,12 @@ contract('NFTSwap offers', function(accounts) {
     await util.expectRevert(nftSwapInst.makeOffer(acc1Token, acc2Token, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 2 }))
   })
 
-  // Dependent on previous tests
   it('makes offer with positive exchange value', async function() {
     let offerId = await util.transactAndReturn(nftSwapInst.makeOffer, acc1Token, acc2Token, 1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 })
     assert.equal(offerId, 1)
     await assertOffer(offerId, accounts[1], acc1Token, acc2Token, 1, util.NON_EXISTENT_NUMBER)
   })
 
-  // Dependent on previous tests
   it('cancels offer with positive exchange value', async function() {
     let accBeforeBalance = web3.eth.getBalance(accounts[1])
     let contractBeforeBalance = web3.eth.getBalance(nftSwapInst.address)
@@ -115,14 +113,12 @@ contract('NFTSwap offers', function(accounts) {
     await util.expectRevert(nftSwapInst.makeOffer(acc1Token, acc2Token, -1, util.NON_EXISTENT_NUMBER, { from: accounts[1], value: 1 }))
   })
 
-  // Dependent on previous tests
   it('makes offer with negative exchange value', async function() {
     let offerId = await util.transactAndReturn(nftSwapInst.makeOffer, acc1Token, acc2Token, -1, util.NON_EXISTENT_NUMBER, { from: accounts[1] })
     assert.equal(offerId, 2)
     await assertOffer(offerId, accounts[1], acc1Token, acc2Token, -1, util.NON_EXISTENT_NUMBER)
   })
 
-  // Dependent on previous tests
   it('cancels offer with negative exchange value', async function() {
     let offer = await nftSwapInst.offers.call(2)
 
