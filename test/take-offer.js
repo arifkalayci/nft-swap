@@ -6,7 +6,7 @@ const assert = chai.assert
 
 util = require('./util')
 
-contract('NFTSwap offers', function(accounts) {
+contract('NFTSwap take offers', function(accounts) {
   let testERC721Inst, nftSwapInst, acc1Token1, acc1Token2, acc1Token3, acc2Token1, acc2Token2, acc2Token3,
     offer, offerWithPositiveExchangeValue, offerWithNegativeExchangeValue, offerFromAcc3ToAcc2, offerWithSoonExpiringBlockNumber
 
