@@ -63,6 +63,11 @@ contract('NFTSwap tokens', function(accounts) {
     assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, approvedToken1)).equals(0))
   })
 
+  it("does not withdraw someone else's token", async function() {
+      // 1 is the listed token index escrowed above
+      await util.expectRevert(nftSwapInst.withdrawToken(1, { from: accounts[1] }))
+  })
+
   it('escrows second approved token', async function() {
     let listedTokenIndex = await escrowToken(testERC721Inst.address, approvedToken2, 'test2')
 
