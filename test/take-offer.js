@@ -108,6 +108,10 @@ contract('NFTSwap take offers', function(accounts) {
     await assertOfferDeleted(offer)
   })
 
+  it('does not take taken offer', async function() {
+    await util.expectRevert(nftSwapInst.takeOffer(offer, { from: accounts[0] }))
+  })
+
   it('does not take offer with positive exchange value with funds', async function() {
     await util.expectRevert(nftSwapInst.takeOffer(offerWithPositiveExchangeValue, { from: accounts[0], value: 1 }))
   })
