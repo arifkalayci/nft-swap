@@ -43,6 +43,11 @@ contract NFTSwap {
     event OfferTaken(address takenContractAddr, uint256 takenTokenId, address givenContractAddr, uint256 givenTokenId, int exchangeValue);
     event OfferCancelled(address requestedContractAddr, uint256 requestedTokenId, address offeredContractAddr, uint256 offeredTokenId, int exchangeValue, uint expires);
 
+    function NFTSwap() public {
+        // This is for starting listed tokens id's from 1, since listed token id 0 have a special meaning (see below)
+        listedTokens.length = 1;
+    }
+
     function escrowToken(address _contractAddr, uint256 _tokenId, string _description) external returns (uint) {
         uint listedTokenIndex = listedTokens.push(ListedToken({
             owner: msg.sender,
@@ -120,6 +125,28 @@ contract NFTSwap {
         return index - 1;
     }
 
+    // Makes an offer for the token listed at _requestedIndex with the sent funds (without offering a token in return)
+    function makeOfferWithFunds(uint _requestedIndex, uint _expiresIn) external payable returns (uint) {
+        require(_expiresIn > 0);
+
+        ListedToken storage requestedToken = listedTokens[_requestedIndex];
+
+        // Can not make offers to delisted token
+        require(requestedToken.owner != 0x0);
+
+        uint index = offers.push(Offer({
+            offerer: msg.sender,
+            requestedIndex: _requestedIndex,
+            offeredIndex: 0,                 // 0 means no token is offered (listed token id's start from 1, see constructor)
+            exchangeValue: int(msg.value),   // Exchange value is equal to the amount sent
+            expires: block.number + _expiresIn
+        }));
+
+        OfferMade(requestedToken.contractAddr, requestedToken.tokenId, 0x0, 0, int(msg.value), block.number + _expiresIn);
+
+        return index - 1;
+    }
+
     function takeOffer(uint _offerId) external payable {
         Offer storage offer = offers[_offerId];
         require(offer.expires > block.number);
@@ -134,37 +161,59 @@ contract NFTSwap {
         ListedToken storage givenToken = listedTokens[offer.requestedIndex];
         require(givenToken.owner == msg.sender);
 
-        ListedToken storage takenToken = listedTokens[offer.offeredIndex];
-
-        // Swap tokens
         givenToken.owner = offer.offerer;
-        takenToken.owner = msg.sender;
 
         uint givenTokenIndex = tokenIndexInOwnerTokens[givenToken.contractAddr][givenToken.tokenId];
-        uint takenTokenIndex = tokenIndexInOwnerTokens[takenToken.contractAddr][takenToken.tokenId];
 
-        uint temp = ownerTokens[msg.sender][givenTokenIndex];
-        ownerTokens[msg.sender][givenTokenIndex] = ownerTokens[offer.offerer][takenTokenIndex];
-        ownerTokens[offer.offerer][takenTokenIndex] = temp;
+        ListedToken storage takenToken = listedTokens[offer.offeredIndex];
 
-        temp = tokenIndexInOwnerTokens[givenToken.contractAddr][givenToken.tokenId];
-        tokenIndexInOwnerTokens[givenToken.contractAddr][givenToken.tokenId] =
-            tokenIndexInOwnerTokens[takenToken.contractAddr][takenToken.tokenId];
-        tokenIndexInOwnerTokens[takenToken.contractAddr][takenToken.tokenId] = temp;
+        // If this is a "cash-only" offer
+        if (takenToken.owner == 0x0) {  // We are actually checking if null
+            uint toBeMovedTokenIndex = ownerTokens[msg.sender].length - 1;
 
-        // Transfer exchange value if required. If the value is 0, no funds are transferred
-        if (offer.exchangeValue > 0) {
-            // We have positive value, meaning offerer pays
+            if (givenTokenIndex != toBeMovedTokenIndex) {
+                ownerTokens[msg.sender][givenTokenIndex] = ownerTokens[msg.sender][toBeMovedTokenIndex];
+
+                ListedToken storage toBeMovedToken = listedTokens[ownerTokens[msg.sender][toBeMovedTokenIndex]];
+                tokenIndexInOwnerTokens[toBeMovedToken.contractAddr][toBeMovedToken.tokenId] = givenTokenIndex;
+            }
+
+            ownerTokens[msg.sender].length--;
+
+            uint newIndex = ownerTokens[offer.offerer].push(offer.requestedIndex) - 1;
+            tokenIndexInOwnerTokens[givenToken.contractAddr][givenToken.tokenId] = newIndex;
+
             msg.sender.transfer(uint(offer.exchangeValue));
-        } else if (offer.exchangeValue < 0) {
-            // We have negative value, meaning offerer receives
-            offer.offerer.transfer(uint(-offer.exchangeValue));
+
+            OfferTaken(0x0, 0, givenToken.contractAddr, givenToken.tokenId, offer.exchangeValue);
+        } else { // Cash only offer
+            takenToken.owner = msg.sender;
+
+            uint takenTokenIndex = tokenIndexInOwnerTokens[takenToken.contractAddr][takenToken.tokenId];
+
+            uint temp = ownerTokens[msg.sender][givenTokenIndex];
+            ownerTokens[msg.sender][givenTokenIndex] = ownerTokens[offer.offerer][takenTokenIndex];
+            ownerTokens[offer.offerer][takenTokenIndex] = temp;
+
+            temp = tokenIndexInOwnerTokens[givenToken.contractAddr][givenToken.tokenId];
+            tokenIndexInOwnerTokens[givenToken.contractAddr][givenToken.tokenId] =
+                tokenIndexInOwnerTokens[takenToken.contractAddr][takenToken.tokenId];
+            tokenIndexInOwnerTokens[takenToken.contractAddr][takenToken.tokenId] = temp;
+
+            // Transfer exchange value if required. If the value is 0, no funds are transferred
+            if (offer.exchangeValue > 0) {
+                // We have positive value, meaning offerer pays
+                msg.sender.transfer(uint(offer.exchangeValue));
+            } else if (offer.exchangeValue < 0) {
+                // We have negative value, meaning offerer receives
+                offer.offerer.transfer(uint(-offer.exchangeValue));
+            }
+
+            OfferTaken(takenToken.contractAddr, takenToken.tokenId, givenToken.contractAddr, givenToken.tokenId, offer.exchangeValue);
         }
 
         // Remove offer since it's taken
         delete offers[_offerId];
-
-        OfferTaken(takenToken.contractAddr, takenToken.tokenId, givenToken.contractAddr, givenToken.tokenId, offer.exchangeValue);
     }
 
     // This does not remove the approval of the token
