@@ -6,6 +6,7 @@ const assert = chai.assert
 
 util = require('./util')
 
+// TODO: Refactor to use util.transactAndReturn
 contract('NFTSwap tokens', function(accounts) {
   let testERC721Inst, nftSwapInst, unapprovedToken, approvedToken1, approvedToken2, approvedToken3
 

@@ -14,6 +14,7 @@ _To be written_
 - Test events
 - Swap multiple tokens in one transaction
 - Measure gas usage
+- Add tests for "makeOfferWithRefunds"
 ### Notes
 - Each test in a test suite (`contract` block) depend on previous tests meaning they cannot be run separately.
 - Also see [this issue](https://github.com/trufflesuite/truffle/issues/557) with truffle, where tests fail randomly.
