@@ -13,8 +13,7 @@ contract('NFTSwap take offers', function(accounts) {
   const mintAndEscrowToken = async (account) => {
     let id = await util.transactAndReturn(testERC721Inst.mint, { from: account })
     await testERC721Inst.approve(nftSwapInst.address, id, { from: account })
-    await nftSwapInst.escrowToken(testERC721Inst.address, id, '', { from: account })
-    return id
+    return await util.transactAndReturn(nftSwapInst.escrowToken, testERC721Inst.address, id, '', { from: account })
   }
 
   const assertOfferDeleted = async (offerId) => {
@@ -97,13 +96,14 @@ contract('NFTSwap take offers', function(accounts) {
     assert((await nftSwapInst.ownerTokens.call(accounts[1], 1)).equals(acc2Token2))
     assert((await nftSwapInst.ownerTokens.call(accounts[1], 2)).equals(acc2Token3))
 
-    // Check if token indexes are correct
-    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc2Token1)).equals(0))
-    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc1Token2)).equals(1))
-    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc1Token3)).equals(2))
-    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc1Token1)).equals(0))
-    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc2Token2)).equals(1))
-    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc2Token3)).equals(2))
+    // Check if token indexes are correct (tokenIndexInOwnerTokens array holds token ids while acc2Token1, 2 etc are listed token indexes)
+    // token id = listed token index - 1 in test fixture
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc2Token1 - 1)).equals(0))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc1Token2 - 1)).equals(1))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc1Token3 - 1)).equals(2))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc1Token1 - 1)).equals(0))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc2Token2 - 1)).equals(1))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc2Token3 - 1)).equals(2))
 
     await assertOfferDeleted(offer)
   })
@@ -141,12 +141,12 @@ contract('NFTSwap take offers', function(accounts) {
     assert((await nftSwapInst.ownerTokens.call(accounts[1], 2)).equals(acc1Token2))
 
     // Check if token indexes are correct
-    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc1Token1)).equals(0))
-    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc1Token2)).equals(2))
-    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc1Token3)).equals(2))
-    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc2Token1)).equals(0))
-    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc2Token2)).equals(1))
-    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc2Token3)).equals(1))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc1Token1 - 1)).equals(0))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc1Token2 - 1)).equals(2))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc1Token3 - 1)).equals(2))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc2Token1 - 1)).equals(0))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc2Token2 - 1)).equals(1))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc2Token3 - 1)).equals(1))
 
     await assertOfferDeleted(offerWithPositiveExchangeValue)
   })
@@ -188,12 +188,12 @@ contract('NFTSwap take offers', function(accounts) {
     assert((await nftSwapInst.ownerTokens.call(accounts[1], 2)).equals(acc1Token2))
 
     // Check if token indexes are correct
-    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc1Token1)).equals(0))
-    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc1Token2)).equals(2))
-    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc1Token3)).equals(1))
-    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc2Token1)).equals(0))
-    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc2Token2)).equals(2))
-    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc2Token3)).equals(1))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc1Token1 - 1)).equals(0))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc1Token2 - 1)).equals(2))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc1Token3 - 1)).equals(1))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc2Token1 - 1)).equals(0))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc2Token2 - 1)).equals(2))
+    assert((await nftSwapInst.tokenIndexInOwnerTokens.call(testERC721Inst.address, acc2Token3 - 1)).equals(1))
 
     await assertOfferDeleted(offerWithNegativeExchangeValue)
   })
